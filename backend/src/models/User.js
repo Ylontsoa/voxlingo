@@ -12,6 +12,7 @@ const User = sequelize.define('User', {
   last_practice_date: { type: DataTypes.DATE, allowNull: true },
   xp: { type: DataTypes.INTEGER, defaultValue: 0 },
   level: { type: DataTypes.INTEGER, defaultValue: 1 },
+  email_verified: { type: DataTypes.BOOLEAN, defaultValue: false }, // ✅ Ajouté
 }, {
   tableName: 'users',
   timestamps: true,

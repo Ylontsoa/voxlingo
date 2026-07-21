@@ -16,8 +16,7 @@ async function register(req, res, next) {
     }
 
     const password_hash = await hashPassword(password);
-    // ✅ email_verified = false par défaut
-    const user = await User.create({ email, password_hash, username, email_verified: false });
+    const user = await User.create({ email, password_hash, username, email_verified: false }); // ✅
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     verificationCodes.set(email, { code, expiresAt: Date.now() + 10 * 60 * 1000 });
@@ -50,9 +49,9 @@ async function login(req, res, next) {
       return res.status(401).json({ success: false, message: 'Email ou mot de passe incorrect' });
     }
 
-    // ✅ Vérifier si l'email est vérifié
+    // ✅ Vérification email
     if (!user.email_verified) {
-      return res.status(401).json({ success: false, message: 'Email non verifie. Verifie ta boite mail.' });
+      return res.status(401).json({ success: false, message: 'Email non verifie. Verifie ta boite mail.', redirectToVerify: true, email: user.email });
     }
 
     const isValid = await comparePassword(password, user.password_hash);
@@ -143,14 +142,11 @@ async function uploadAvatar(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Aucun fichier recu' });
     }
-
     const user = req.user;
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const fileUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
-
     user.profile_image_url = fileUrl;
     await user.save();
-
     res.json({ success: true, profile_image_url: fileUrl });
   } catch (error) {
     next(error);
@@ -163,12 +159,10 @@ async function sendVerificationCode(req, res, next) {
     const { email } = req.body;
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     verificationCodes.set(email, { code, expiresAt: Date.now() + 10 * 60 * 1000 });
-    
     const sent = await sendVerificationEmail(email, code);
     if (!sent) {
       console.log(`📧 Code pour ${email} : ${code}`);
     }
-    
     res.json({ success: true, message: 'Code envoye' });
   } catch (error) {
     next(error);
