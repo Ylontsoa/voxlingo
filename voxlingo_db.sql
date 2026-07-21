@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : dim. 19 juil. 2026 à 18:35
+-- Généré le : mar. 21 juil. 2026 à 19:11
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -79,7 +79,16 @@ INSERT INTO `lessons` (`id`, `language`, `level`, `theme`, `title`, `image_url`,
 (33, 'italien', 'débutant', 'chiffres', 'I numeri', 'https://images.unsplash.com/photo-1502570149819-b2260483d302?w=400', 3, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 (34, 'italien', 'débutant', 'nourriture', 'Al ristorante', 'https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=400', 4, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
 (35, 'italien', 'intermédiaire', 'voyage', 'In aeroporto', 'https://images.unsplash.com/photo-1553603227-2358aabe821e?w=400', 5, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
-(36, 'italien', 'intermédiaire', 'shopping', 'Fare shopping', 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400', 6, '0000-00-00 00:00:00', '0000-00-00 00:00:00');
+(36, 'italien', 'intermédiaire', 'shopping', 'Fare shopping', 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400', 6, '0000-00-00 00:00:00', '0000-00-00 00:00:00'),
+(37, 'francais', 'débutant', 'alphabet', 'Alphabet francais', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', 1, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(38, 'francais', 'débutant', 'salutations', 'Se presenter', 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400', 2, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(39, 'francais', 'débutant', 'chiffres', 'Compter en francais', 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400', 3, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(40, 'francais', 'débutant', 'couleurs', 'Les couleurs', 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=400', 4, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(41, 'francais', 'débutant', 'nourriture', 'Au restaurant', 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400', 5, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(42, 'francais', 'débutant', 'famille', 'Parler de sa famille', 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=400', 6, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(43, 'francais', 'intermédiaire', 'voyage', 'A laeroport', 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400', 7, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(44, 'francais', 'intermédiaire', 'shopping', 'Faire du shopping', 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400', 8, '2026-07-19 20:02:27', '2026-07-19 20:02:27'),
+(45, 'francais', 'avancé', 'travail', 'Entretien dembauche', 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400', 9, '2026-07-19 20:02:27', '2026-07-19 20:02:27');
 
 -- --------------------------------------------------------
 
@@ -579,7 +588,72 @@ INSERT INTO `phrases` (`id`, `lesson_id`, `text_target`, `text_translation`, `or
 (476, 24, 'Houkoku sho wo teishutsu shimasu', 'Je vais soumettre le rapport', 12, '0000-00-00 00:00:00'),
 (477, 24, 'Yasumi wo toritai desu', 'Je voudrais prendre un conge', 13, '0000-00-00 00:00:00'),
 (478, 24, 'Shigoto wa tanoshii desu', 'Le travail est agreable', 14, '0000-00-00 00:00:00'),
-(479, 24, 'Mata ashita', 'A demain', 15, '0000-00-00 00:00:00');
+(479, 24, 'Mata ashita', 'A demain', 15, '0000-00-00 00:00:00'),
+(480, 37, 'A comme Avion', 'A comme Avion', 1, '2026-07-19 20:02:49'),
+(481, 37, 'B comme Ballon', 'B comme Ballon', 2, '2026-07-19 20:02:49'),
+(482, 37, 'C comme Chat', 'C comme Chat', 3, '2026-07-19 20:02:49'),
+(483, 37, 'D comme Dauphin', 'D comme Dauphin', 4, '2026-07-19 20:02:49'),
+(484, 37, 'E comme Elephant', 'E comme Elephant', 5, '2026-07-19 20:02:49'),
+(485, 37, 'F comme Fleur', 'F comme Fleur', 6, '2026-07-19 20:02:49'),
+(486, 37, 'G comme Girafe', 'G comme Girafe', 7, '2026-07-19 20:02:49'),
+(487, 37, 'H comme Hibou', 'H comme Hibou', 8, '2026-07-19 20:02:49'),
+(488, 37, 'I comme Igloo', 'I comme Igloo', 9, '2026-07-19 20:02:49'),
+(489, 37, 'J comme Jardin', 'J comme Jardin', 10, '2026-07-19 20:02:49'),
+(490, 37, 'K comme Koala', 'K comme Koala', 11, '2026-07-19 20:02:49'),
+(491, 37, 'L comme Lune', 'L comme Lune', 12, '2026-07-19 20:02:49'),
+(492, 37, 'M comme Maison', 'M comme Maison', 13, '2026-07-19 20:02:49'),
+(493, 37, 'N comme Nuage', 'N comme Nuage', 14, '2026-07-19 20:02:49'),
+(494, 37, 'O comme Orange', 'O comme Orange', 15, '2026-07-19 20:02:49'),
+(495, 37, 'P comme Pomme', 'P comme Pomme', 16, '2026-07-19 20:02:49'),
+(496, 37, 'Q comme Quatre', 'Q comme Quatre', 17, '2026-07-19 20:02:49'),
+(497, 37, 'R comme Rose', 'R comme Rose', 18, '2026-07-19 20:02:49'),
+(498, 37, 'S comme Soleil', 'S comme Soleil', 19, '2026-07-19 20:02:49'),
+(499, 37, 'T comme Tomate', 'T comme Tomate', 20, '2026-07-19 20:02:49'),
+(500, 37, 'U comme Usine', 'U comme Usine', 21, '2026-07-19 20:02:49'),
+(501, 37, 'V comme Voiture', 'V comme Voiture', 22, '2026-07-19 20:02:49'),
+(502, 37, 'W comme Wagon', 'W comme Wagon', 23, '2026-07-19 20:02:49'),
+(503, 37, 'X comme Xylophone', 'X comme Xylophone', 24, '2026-07-19 20:02:49'),
+(504, 37, 'Y comme Yaourt', 'Y comme Yaourt', 25, '2026-07-19 20:02:49'),
+(505, 37, 'Z comme Zebre', 'Z comme Zebre', 26, '2026-07-19 20:02:49'),
+(506, 38, 'Bonjour, je m appelle Marie', 'Hello, my name is Marie', 1, '2026-07-19 20:03:06'),
+(507, 38, 'Enchante de vous rencontrer', 'Nice to meet you', 2, '2026-07-19 20:03:06'),
+(508, 38, 'Comment allez-vous aujourd hui', 'How are you today', 3, '2026-07-19 20:03:06'),
+(509, 38, 'Je vais bien, merci', 'I am fine, thank you', 4, '2026-07-19 20:03:06'),
+(510, 38, 'D ou venez-vous', 'Where are you from', 5, '2026-07-19 20:03:06'),
+(511, 38, 'Je viens de France', 'I am from France', 6, '2026-07-19 20:03:06'),
+(512, 38, 'Quel age avez-vous', 'How old are you', 7, '2026-07-19 20:03:06'),
+(513, 38, 'J ai vingt ans', 'I am twenty years old', 8, '2026-07-19 20:03:06'),
+(514, 38, 'Parlez-vous anglais', 'Do you speak English', 9, '2026-07-19 20:03:06'),
+(515, 38, 'Je parle un peu francais', 'I speak a little French', 10, '2026-07-19 20:03:06'),
+(516, 38, 'Comment vous appelez-vous', 'What is your name', 11, '2026-07-19 20:03:06'),
+(517, 38, 'Au revoir, a bientot', 'Goodbye, see you soon', 12, '2026-07-19 20:03:06'),
+(518, 39, 'Un, deux, trois', 'One, two, three', 1, '2026-07-19 20:05:00'),
+(519, 39, 'Quatre, cinq, six', 'Four, five, six', 2, '2026-07-19 20:05:00'),
+(520, 39, 'Sept, huit, neuf, dix', 'Seven, eight, nine, ten', 3, '2026-07-19 20:05:00'),
+(521, 39, 'Onze, douze, treize', 'Eleven, twelve, thirteen', 4, '2026-07-19 20:05:00'),
+(522, 39, 'Quatorze, quinze, seize', 'Fourteen, fifteen, sixteen', 5, '2026-07-19 20:05:00'),
+(523, 39, 'Dix-sept, dix-huit, dix-neuf', 'Seventeen, eighteen, nineteen', 6, '2026-07-19 20:05:00'),
+(524, 39, 'Vingt, trente, quarante', 'Twenty, thirty, forty', 7, '2026-07-19 20:05:00'),
+(525, 39, 'Cinquante, soixante', 'Fifty, sixty', 8, '2026-07-19 20:05:00'),
+(526, 39, 'Soixante-dix, quatre-vingts', 'Seventy, eighty', 9, '2026-07-19 20:05:00'),
+(527, 39, 'Quatre-vingt-dix, cent', 'Ninety, one hundred', 10, '2026-07-19 20:05:00'),
+(528, 39, 'Combien ca coute', 'How much does it cost', 11, '2026-07-19 20:05:00'),
+(529, 39, 'J ai deux freres', 'I have two brothers', 12, '2026-07-19 20:05:00'),
+(530, 39, 'Il est dix heures', 'It is ten o clock', 13, '2026-07-19 20:05:00'),
+(531, 39, 'Donnez-moi cinq minutes', 'Give me five minutes', 14, '2026-07-19 20:05:00'),
+(532, 39, 'Mille mercis', 'A thousand thanks', 15, '2026-07-19 20:05:00'),
+(533, 41, 'Puis-je voir le menu s il vous plait', 'Can I see the menu please', 1, '2026-07-19 20:05:14'),
+(534, 41, 'Je voudrais un cafe', 'I would like a coffee', 2, '2026-07-19 20:05:14'),
+(535, 41, 'Que recommandez-vous', 'What do you recommend', 3, '2026-07-19 20:05:14'),
+(536, 41, 'Je suis vegetarien', 'I am vegetarian', 4, '2026-07-19 20:05:14'),
+(537, 41, 'Je voudrais commander maintenant', 'I would like to order now', 5, '2026-07-19 20:05:14'),
+(538, 41, 'De l eau s il vous plait', 'Some water please', 6, '2026-07-19 20:05:14'),
+(539, 41, 'C est delicieux', 'This is delicious', 7, '2026-07-19 20:05:14'),
+(540, 41, 'L addition s il vous plait', 'The bill please', 8, '2026-07-19 20:05:14'),
+(541, 41, 'Puis-je payer par carte', 'Can I pay by card', 9, '2026-07-19 20:05:14'),
+(542, 41, 'Une table pour deux s il vous plait', 'A table for two please', 10, '2026-07-19 20:05:14'),
+(543, 41, 'Bon appetit', 'Enjoy your meal', 11, '2026-07-19 20:05:14'),
+(544, 41, 'J ai une reservation', 'I have a reservation', 12, '2026-07-19 20:05:14');
 
 -- --------------------------------------------------------
 
@@ -596,88 +670,6 @@ CREATE TABLE `progress` (
   `transcription` varchar(500) DEFAULT NULL,
   `attempted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Déchargement des données de la table `progress`
---
-
-INSERT INTO `progress` (`id`, `user_id`, `phrase_id`, `lesson_id`, `score`, `transcription`, `attempted_at`) VALUES
-(1, 2, 1, 1, 75, ' I is for Apple', '2026-07-19 06:38:59'),
-(2, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 06:39:29'),
-(3, 2, 54, 2, 100, ' Nice to meet you.', '2026-07-19 06:39:45'),
-(4, 2, 55, 2, 75, ' How are you Monday?', '2026-07-19 06:40:06'),
-(5, 2, 56, 2, 100, ' I am fine, thank you.', '2026-07-19 06:40:28'),
-(6, 2, 57, 2, 100, ' Where are you from?', '2026-07-19 06:40:42'),
-(7, 2, 58, 2, 75, ' I am from Madagascar.', '2026-07-19 06:40:58'),
-(8, 2, 65, 3, 100, ' One, two, three. One, two, three.', '2026-07-19 07:37:45'),
-(9, 2, 66, 3, 100, ' four five six', '2026-07-19 07:38:27'),
-(10, 2, 145, 8, 43, ' Thank you for me this', '2026-07-19 07:40:54'),
-(11, 2, 145, 8, 43, ' Thank you for this opportunity.', '2026-07-19 07:41:39'),
-(12, 2, 146, 8, 29, ' I have experience in this field.', '2026-07-19 07:42:03'),
-(13, 3, 258, 31, 0, ' Adi Albero', '2026-07-19 07:43:20'),
-(14, 3, 330, 36, 100, ' sto solo guardando grazie', '2026-07-19 07:44:05'),
-(15, 3, 331, 36, 14, ' Avete costo più grande.', '2026-07-19 07:44:25'),
-(16, 6, 345, 17, 0, 'ああ', '2026-07-19 07:47:18'),
-(17, 6, 385, 19, 0, 'おはようございます', '2026-07-19 07:47:42'),
-(18, 6, 385, 19, 0, 'おはようございます', '2026-07-19 07:52:50'),
-(19, 6, 385, 19, 0, 'おはようございます', '2026-07-19 08:08:01'),
-(20, 6, 385, 19, 0, 'おはようございます', '2026-07-19 08:08:24'),
-(21, 6, 385, 19, 0, 'おはよう', '2026-07-19 08:08:30'),
-(22, 6, 386, 19, 0, 'こんにちは', '2026-07-19 08:08:41'),
-(23, 6, 386, 19, 0, 'こんにちは', '2026-07-19 08:09:00'),
-(24, 6, 387, 19, 0, 'こんばんは', '2026-07-19 08:09:28'),
-(25, 6, 387, 19, 0, 'こんばんは', '2026-07-19 08:09:51'),
-(26, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 08:10:27'),
-(27, 2, 54, 2, 100, ' Nice to meet you!', '2026-07-19 08:10:46'),
-(28, 2, 55, 2, 75, ' How are you?', '2026-07-19 08:11:03'),
-(29, 2, 56, 2, 0, ' Thank you.', '2026-07-19 08:12:15'),
-(30, 2, 57, 2, 75, ' Where are you?', '2026-07-19 08:12:49'),
-(31, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 08:24:46'),
-(32, 2, 53, 2, 80, ' Hello, my name is Rastafari.', '2026-07-19 08:24:49'),
-(33, 2, 53, 2, 80, ' Hello, my name is Sarbite Koson. Ato Nohu Gansal.', '2026-07-19 08:25:30'),
-(34, 2, 53, 2, 80, ' hello my name is Bri', '2026-07-19 08:25:31'),
-(35, 2, 53, 2, 20, ' What\'s your name? Tere Mandel Zio? Nooooooo', '2026-07-19 08:25:37'),
-(36, 2, 53, 2, 80, ' Hello, my name is Sharpeethi.', '2026-07-19 08:29:37'),
-(37, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 08:30:15'),
-(38, 2, 53, 2, 0, ' My name is John.', '2026-07-19 08:46:27'),
-(39, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 08:46:43'),
-(40, 2, 53, 2, 80, ' Hello, my name is', '2026-07-19 08:53:22'),
-(41, 2, 54, 2, 25, ' Nice meet you.', '2026-07-19 08:53:53'),
-(42, 2, 54, 2, 0, ' To meet you!', '2026-07-19 08:54:13'),
-(43, 2, 54, 2, 0, ' To meet you!', '2026-07-19 08:54:26'),
-(44, 2, 55, 2, 0, ' today', '2026-07-19 08:54:49'),
-(45, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 11:36:19'),
-(46, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 11:36:36'),
-(47, 2, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 11:49:18'),
-(48, 2, 54, 2, 100, ' Nice to meet you!', '2026-07-19 11:49:42'),
-(49, 2, 55, 2, 75, ' How are you?', '2026-07-19 11:50:15'),
-(50, 2, 56, 2, 100, ' I am fine, thank you.', '2026-07-19 11:53:32'),
-(51, 2, 57, 2, 75, ' Where are you?', '2026-07-19 11:54:47'),
-(52, 2, 58, 2, 0, ' From France.', '2026-07-19 11:55:44'),
-(53, 2, 59, 2, 100, ' What is your name?', '2026-07-19 11:56:11'),
-(54, 2, 1, 1, 0, ' Hi, I\'m Sir ComoApples', '2026-07-19 12:31:29'),
-(55, 2, 145, 8, 100, ' Thank you for giving me this opportunity.', '2026-07-19 12:31:55'),
-(56, 2, 146, 8, 100, ' I have extensive experience in this field.', '2026-07-19 12:32:13'),
-(57, 2, 55, 2, 75, ' How are you?', '2026-07-19 12:32:27'),
-(58, 2, 57, 2, 75, ' Where are you?', '2026-07-19 12:32:38'),
-(59, 2, 58, 2, 75, ' I am from', '2026-07-19 12:32:51'),
-(60, 2, 1, 1, 0, ' Ah, this is for Apple.', '2026-07-19 13:13:34'),
-(61, 2, 55, 2, 75, ' How are you?', '2026-07-19 13:13:57'),
-(62, 2, 57, 2, 100, ' Where are you from?', '2026-07-19 13:14:22'),
-(63, 1, 175, 10, 25, ' Hola, mi nombre es Juan.', '2026-07-19 13:15:32'),
-(64, 1, 176, 10, 100, ' mucho gusto', '2026-07-19 13:16:12'),
-(65, 1, 177, 10, 100, ' ¿Cómo estás?', '2026-07-19 13:16:31'),
-(66, 1, 178, 10, 100, ' Estoy bien, gracias.', '2026-07-19 13:16:53'),
-(67, 1, 179, 10, 100, ' ¿De dónde eres?', '2026-07-19 13:17:09'),
-(68, 1, 180, 10, 67, ' Soy de...', '2026-07-19 13:17:38'),
-(69, 1, 180, 10, 100, ' Soy de España.', '2026-07-19 13:17:55'),
-(70, 1, 181, 10, 100, ' ¿Cuántos años tienes?', '2026-07-19 13:18:12'),
-(71, 1, 182, 10, 67, ' Tengo 25 años.', '2026-07-19 13:18:34'),
-(72, 8, 1, 1, 0, ' Eyes for Abel!', '2026-07-19 15:05:06'),
-(73, 8, 53, 2, 100, ' Hello, my name is John.', '2026-07-19 15:05:53'),
-(74, 8, 100, 5, 100, ' Can I see the menu please?', '2026-07-19 15:10:10'),
-(75, 8, 101, 5, 20, ' I like coffee.', '2026-07-19 15:10:29'),
-(76, 9, 385, 19, 0, 'おー、ござんまそまいそ', '2026-07-19 15:20:01');
 
 -- --------------------------------------------------------
 
@@ -696,23 +688,16 @@ CREATE TABLE `users` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `xp` int(11) DEFAULT 0,
-  `level` int(11) DEFAULT 1
+  `level` int(11) DEFAULT 1,
+  `username` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password_hash`, `target_language`, `profile_image_url`, `current_streak`, `last_practice_date`, `created_at`, `updated_at`, `xp`, `level`) VALUES
-(1, 'sarobidy.vetsotiana@gmail.com', '$2b$10$Lr57VNKf5aOGjpbiDuwNW.b194MgLins5o0.uSIogTWgVXB2A1qfC', 'espagnol', NULL, 1, '2026-07-19 13:18:34', '2026-07-18 23:18:16', '2026-07-19 13:18:34', 66, 1),
-(2, 'lesarhobids@gmail.com', '$2b$10$E8l/OVvxBzdT3CmYZD68T.c5jLVqeoH1hRLcFYsE8SuT92pj8AXIi', 'anglais', 'https://api.dicebear.com/7.x/avataaars/png?seed=Zoe', 1, '2026-07-19 13:14:22', '2026-07-18 23:21:06', '2026-07-19 13:14:22', 108, 2),
-(3, 'xuyate03@gmail.com', '$2b$10$/e.zKl1oEr10M716USIxE.48cKTrVVn9BGxrTRHPGevh08jKxBqx2', 'italien', NULL, 1, '2026-07-19 07:44:25', '2026-07-18 23:22:33', '2026-07-19 07:44:25', 0, 1),
-(4, 'xuyate01@gmail.com', '$2b$10$.xQtWImRt7imSoaXW.ZymO6xvUmdrvMPAa4/bSctbDkusZp0aNk9y', 'italien', NULL, 0, NULL, '2026-07-18 23:26:42', '2026-07-18 23:26:46', 0, 1),
-(5, 'xuyate02@gmail.com', '$2b$10$DFy1iFsztxBobb0MvzROh.wHb9BvmXjRj3gsJKAigLAIRqIeUZ4UK', 'japonais', NULL, 0, NULL, '2026-07-18 23:32:11', '2026-07-18 23:32:15', 0, 1),
-(6, 'xuyate04@gmail.com', '$2b$10$ufuPVKovAGtRz8UpJWFLhuY3T/U9.mfI3YW2y7npjpjSfmGbeRi2C', 'japonais', NULL, 1, '2026-07-19 08:09:51', '2026-07-19 07:46:44', '2026-07-19 08:09:51', 0, 1),
-(7, 'toxxrt01@gmail.com', '$2b$10$bZU/UXdQa8rGZw2UcFkEiuzDHhmPN4rt5kgbRaXT31ic8PgbFClme', 'japonais', NULL, 0, NULL, '2026-07-19 13:19:36', '2026-07-19 13:19:41', 0, 1),
-(8, 'antenainaprosper123@gmail.com', '$2b$10$NwOus0C9lvYyNf87RWMhLuhaz38WP.t6mWKduieArXYDPQBW.KdIm', 'anglais', NULL, 1, '2026-07-19 15:10:29', '2026-07-19 15:03:24', '2026-07-19 15:10:29', 24, 1),
-(9, 'antenainaprosper124@gmail.com', '$2b$10$qLVOIVTLyO5/jxpSvERjtudeg7yTYs9/moduIV7Qj3wjFuMdrnxHa', 'japonais', NULL, 1, '2026-07-19 15:20:01', '2026-07-19 15:16:20', '2026-07-19 15:20:01', 2, 1);
+INSERT INTO `users` (`id`, `email`, `password_hash`, `target_language`, `profile_image_url`, `current_streak`, `last_practice_date`, `created_at`, `updated_at`, `xp`, `level`, `username`) VALUES
+(16, 'lesarhobids@gmail.com', '$2b$10$FKb6ny4zx3adlRjOHz9BCOL2AK0swpzoJ09BA2djNDN3uRwL80lMm', 'anglais', 'http://192.168.0.200:3000/uploads/avatars/avatar_16_1784630398555.png', 0, NULL, '2026-07-21 08:11:48', '2026-07-21 10:39:59', 0, 1, 'Bidy Ylountsoa ');
 
 --
 -- Index pour les tables déchargées
@@ -751,7 +736,21 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email_4` (`email`),
   ADD UNIQUE KEY `email_5` (`email`),
   ADD UNIQUE KEY `email_6` (`email`),
-  ADD UNIQUE KEY `email_7` (`email`);
+  ADD UNIQUE KEY `email_7` (`email`),
+  ADD UNIQUE KEY `email_8` (`email`),
+  ADD UNIQUE KEY `email_9` (`email`),
+  ADD UNIQUE KEY `email_10` (`email`),
+  ADD UNIQUE KEY `email_11` (`email`),
+  ADD UNIQUE KEY `email_12` (`email`),
+  ADD UNIQUE KEY `email_13` (`email`),
+  ADD UNIQUE KEY `email_14` (`email`),
+  ADD UNIQUE KEY `email_15` (`email`),
+  ADD UNIQUE KEY `email_16` (`email`),
+  ADD UNIQUE KEY `email_17` (`email`),
+  ADD UNIQUE KEY `email_18` (`email`),
+  ADD UNIQUE KEY `email_19` (`email`),
+  ADD UNIQUE KEY `email_20` (`email`),
+  ADD UNIQUE KEY `email_21` (`email`);
 
 --
 -- AUTO_INCREMENT pour les tables déchargées
@@ -761,25 +760,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `lessons`
 --
 ALTER TABLE `lessons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT pour la table `phrases`
 --
 ALTER TABLE `phrases`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=480;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=545;
 
 --
 -- AUTO_INCREMENT pour la table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
 
 --
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Contraintes pour les tables déchargées
@@ -795,9 +794,9 @@ ALTER TABLE `phrases`
 -- Contraintes pour la table `progress`
 --
 ALTER TABLE `progress`
-  ADD CONSTRAINT `progress_ibfk_19` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `progress_ibfk_20` FOREIGN KEY (`phrase_id`) REFERENCES `phrases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `progress_ibfk_21` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `progress_ibfk_61` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `progress_ibfk_62` FOREIGN KEY (`phrase_id`) REFERENCES `phrases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `progress_ibfk_63` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
