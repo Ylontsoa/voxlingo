@@ -16,7 +16,7 @@ async function register(req, res, next) {
     }
 
     const password_hash = await hashPassword(password);
-    const user = await User.create({ email, password_hash, username, email_verified: false }); // ✅
+    const user = await User.create({ email, password_hash, username });
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     verificationCodes.set(email, { code, expiresAt: Date.now() + 10 * 60 * 1000 });
@@ -47,11 +47,6 @@ async function login(req, res, next) {
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({ success: false, message: 'Email ou mot de passe incorrect' });
-    }
-
-    // ✅ Vérification email
-    if (!user.email_verified) {
-      return res.status(401).json({ success: false, message: 'Email non verifie. Verifie ta boite mail.', redirectToVerify: true, email: user.email });
     }
 
     const isValid = await comparePassword(password, user.password_hash);
@@ -136,17 +131,20 @@ async function updateProfile(req, res, next) {
   }
 }
 
-// POST /api/auth/upload-avatar
+// ✅ POST /api/auth/upload-avatar
 async function uploadAvatar(req, res, next) {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'Aucun fichier recu' });
     }
+
     const user = req.user;
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const fileUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+
     user.profile_image_url = fileUrl;
     await user.save();
+
     res.json({ success: true, profile_image_url: fileUrl });
   } catch (error) {
     next(error);
@@ -159,10 +157,12 @@ async function sendVerificationCode(req, res, next) {
     const { email } = req.body;
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     verificationCodes.set(email, { code, expiresAt: Date.now() + 10 * 60 * 1000 });
+    
     const sent = await sendVerificationEmail(email, code);
     if (!sent) {
       console.log(`📧 Code pour ${email} : ${code}`);
     }
+    
     res.json({ success: true, message: 'Code envoye' });
   } catch (error) {
     next(error);
@@ -184,13 +184,6 @@ async function verifyCode(req, res, next) {
     }
     if (stored.code !== code) {
       return res.status(400).json({ success: false, message: 'Code incorrect' });
-    }
-
-    // ✅ Marquer l'email comme vérifié
-    const user = await User.findOne({ where: { email } });
-    if (user) {
-      user.email_verified = true;
-      await user.save();
     }
 
     verificationCodes.delete(email);
