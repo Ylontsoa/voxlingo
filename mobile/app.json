@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "VoxLingo",
+    "slug": "voxlingo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#6366f1"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "VoxLingo a besoin du micro pour evaluer votre prononciation."
+      }
+    },
+    "android": {
+      "package": "com.voxlingo.app",
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "voxlingo",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "33348e3b-da27-4ea6-a60b-547ce7312600"
+      }
+    }
+  }
+}
