@@ -5,17 +5,40 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../hooks/useTheme';
 import client from '../../services/api/client';
 
+const RESEND_COOLDOWN = 30; // secondes
+
 export default function VerifyEmailScreen() {
   const { theme } = useTheme();
   const { email } = useLocalSearchParams<{ email: string }>();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef<(TextInput | null)[]>([]);
+  const isMounted = useRef(true);
 
-  // ✅ Vérification automatique quand les 6 chiffres sont remplis
+  useEffect(() => {
+    return () => { isMounted.current = false; };
+  }, []);
+
+  // Garde-fou : écran ouvert sans email (ex: lien direct) -> on revient en arrière
+  useEffect(() => {
+    if (!email) {
+      Alert.alert('Erreur', 'Aucun email fourni.');
+      router.back();
+    }
+  }, [email]);
+
+  // Compte à rebours du bouton "Renvoyer le code"
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  // Vérification automatique quand les 6 chiffres sont remplis
   useEffect(() => {
     const fullCode = code.join('');
-    if (fullCode.length === 6) {
+    if (fullCode.length === 6 && !loading) {
       handleVerify(fullCode);
     }
   }, [code]);
@@ -26,29 +49,38 @@ export default function VerifyEmailScreen() {
       await client.post('/auth/verify-code', { email, code: verificationCode });
       router.replace('/(auth)/language-select');
     } catch (err: any) {
-      Alert.alert('Erreur', err?.response?.data?.message || 'Code incorrect');
-      setCode(['', '', '', '', '', '']);
-      inputRefs.current[0]?.focus();
+      const isNetworkError = !err?.response;
+      Alert.alert(
+        'Erreur',
+        isNetworkError
+          ? 'Connexion au serveur impossible. Le serveur peut mettre quelques secondes à démarrer, réessaie.'
+          : err?.response?.data?.message || 'Code incorrect'
+      );
+      if (isMounted.current) {
+        setCode(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }
 
   async function resendCode() {
+    if (resendCooldown > 0) return;
     try {
       await client.post('/auth/send-code', { email });
       Alert.alert('Succes', 'Code renvoye !');
-    } catch {
-      Alert.alert('Erreur', 'Impossible de renvoyer le code');
+      setResendCooldown(RESEND_COOLDOWN);
+    } catch (err: any) {
+      Alert.alert('Erreur', err?.response?.data?.message || 'Impossible de renvoyer le code');
     }
   }
 
   function handleChange(text: string, index: number) {
     const newCode = [...code];
-    newCode[index] = text.slice(-1); // Prendre seulement le dernier caractère
+    newCode[index] = text.slice(-1);
     setCode(newCode);
 
-    // Passer au champ suivant automatiquement
     if (text && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -78,10 +110,13 @@ export default function VerifyEmailScreen() {
               onKeyPress={(e) => handleKeyPress(e, index)}
               keyboardType="number-pad"
               maxLength={1}
-              style={[styles.codeInput, { 
-                backgroundColor: theme.surface, 
+              editable={!loading}
+              autoFocus={index === 0}
+              style={[styles.codeInput, {
+                backgroundColor: theme.surface,
                 borderColor: digit ? theme.primary : theme.border,
-                color: theme.text 
+                color: theme.text,
+                opacity: loading ? 0.5 : 1,
               }]}
             />
           ))}
@@ -89,8 +124,10 @@ export default function VerifyEmailScreen() {
 
         {loading && <Text style={[styles.loading, { color: theme.textSecondary }]}>Verification en cours...</Text>}
 
-        <TouchableOpacity onPress={resendCode} style={styles.resendButton}>
-          <Text style={[styles.resendText, { color: theme.primary }]}>Renvoyer le code</Text>
+        <TouchableOpacity onPress={resendCode} disabled={resendCooldown > 0} style={styles.resendButton}>
+          <Text style={[styles.resendText, { color: resendCooldown > 0 ? theme.textSecondary : theme.primary }]}>
+            {resendCooldown > 0 ? `Renvoyer le code (${resendCooldown}s)` : 'Renvoyer le code'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
