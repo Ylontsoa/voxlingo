@@ -1,3 +1,4 @@
+// mobile/services/speech/recognition.ts
 import { Audio } from 'expo-av';
 import client from '../api/client';
 
@@ -96,12 +97,37 @@ export function getLastRecordingUri(): string | null {
 }
 
 export async function playLastRecording(): Promise<void> {
-  if (!lastRecordingUri) return;
+  console.log('[recognition] 🔊 playLastRecording');
+  console.log('[recognition] URI:', lastRecordingUri);
+  
+  if (!lastRecordingUri) {
+    console.log('[recognition] ❌ Pas d\'URI');
+    return;
+  }
+  
+  // ✅ Nettoyer l'ancien son
   if (playbackSound) {
-    await playbackSound.unloadAsync();
+    try {
+      await playbackSound.unloadAsync();
+    } catch (e) {}
     playbackSound = null;
   }
-  const { sound } = await Audio.Sound.createAsync({ uri: lastRecordingUri });
-  playbackSound = sound;
-  await sound.playAsync();
+  
+  try {
+    console.log('[recognition] Création du son...');
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: lastRecordingUri },
+      { shouldPlay: true, volume: 1.0 } // ✅ Volume à fond
+    );
+    playbackSound = sound;
+    
+    // ✅ Forcer le volume
+    await sound.setVolumeAsync(1.0);
+    
+    console.log('[recognition] Lecture...');
+    await sound.playAsync();
+    console.log('[recognition] ✅ Lecture terminée');
+  } catch (error) {
+    console.error('[recognition] ❌ Erreur lecture:', error);
+  }
 }

@@ -1,3 +1,4 @@
+// mobile/app/(auth)/register.tsx
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, KeyboardAvoidingView, Platform,
@@ -26,6 +27,7 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [slowServerMessage, setSlowServerMessage] = useState(false);
 
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
@@ -33,19 +35,40 @@ export default function RegisterScreen() {
   async function handleRegister() {
     setError(null);
     const result = registerSchema.safeParse({ email, password, confirmPassword });
-    if (!result.success) { setError(result.error.issues[0].message); return; }
+    if (!result.success) { 
+      setError(result.error.issues[0].message); 
+      return; 
+    }
     setLoading(true);
+    setSlowServerMessage(false);
+
+    const slowTimer = setTimeout(() => setSlowServerMessage(true), 4000);
+
     try {
       await register(email, password, confirmPassword, username);
       router.replace(`/(auth)/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Cet email est déjà utilisé');
-    } finally { setLoading(false); }
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.[0]?.msg ||
+        err?.response?.data?.errors?.[0]?.message;
+
+      if (serverMessage) {
+        setError(serverMessage);
+      } else if (!err?.response) {
+        setError('Impossible de contacter le serveur. Le serveur met parfois jusqu\'a 50 secondes a demarrer apres une periode d\'inactivite — reessaie dans un instant si ca persiste.');
+      } else {
+        setError('Une erreur est survenue. Reessaie.');
+      }
+    } finally {
+      clearTimeout(slowTimer);
+      setSlowServerMessage(false);
+      setLoading(false);
+    }
   }
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
-      {/* ✅ Icône mode sombre/clair */}
       <TouchableOpacity
         onPress={() => setMode(mode === 'dark' ? 'light' : 'dark')}
         style={[styles.themeToggle, { backgroundColor: theme.surface }]}
@@ -77,11 +100,27 @@ export default function RegisterScreen() {
               </View>
             )}
 
+            {loading && slowServerMessage && (
+              <View style={[styles.slowBox, { backgroundColor: theme.primaryLight, borderColor: theme.primary }]}>
+                <FontAwesome name="clock-o" size={16} color={theme.primary} />
+                <Text style={[styles.slowText, { color: theme.primary }]}>
+                  Le serveur se réveille, cela peut prendre jusqu'à 50 secondes...
+                </Text>
+              </View>
+            )}
+
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: theme.text }]}>Nom</Text>
               <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBackground }]}>
                 <FontAwesome name="user" size={16} color={theme.textSecondary} style={styles.inputIcon} />
-                <TextInput value={username} onChangeText={setUsername} autoCapitalize="words" placeholder="Ton nom" placeholderTextColor={theme.textSecondary} style={[styles.input, { color: theme.text }]} />
+                <TextInput 
+                  value={username} 
+                  onChangeText={setUsername} 
+                  autoCapitalize="words" 
+                  placeholder="Ton nom" 
+                  placeholderTextColor={theme.textSecondary} 
+                  style={[styles.input, { color: theme.text }]} 
+                />
               </View>
             </View>
 
@@ -89,7 +128,16 @@ export default function RegisterScreen() {
               <Text style={[styles.label, { color: theme.text }]}>Email</Text>
               <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBackground }]}>
                 <FontAwesome name="envelope-o" size={16} color={theme.textSecondary} style={styles.inputIcon} />
-                <TextInput value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false} placeholder="ton@email.com" placeholderTextColor={theme.textSecondary} style={[styles.input, { color: theme.text }]} />
+                <TextInput 
+                  value={email} 
+                  onChangeText={setEmail} 
+                  keyboardType="email-address" 
+                  autoCapitalize="none" 
+                  autoCorrect={false} 
+                  placeholder="ton@email.com" 
+                  placeholderTextColor={theme.textSecondary} 
+                  style={[styles.input, { color: theme.text }]} 
+                />
               </View>
             </View>
 
@@ -97,7 +145,15 @@ export default function RegisterScreen() {
               <Text style={[styles.label, { color: theme.text }]}>Mot de passe</Text>
               <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBackground }]}>
                 <FontAwesome name="lock" size={18} color={theme.textSecondary} style={styles.inputIcon} />
-                <TextInput value={password} onChangeText={setPassword} secureTextEntry={!showPassword} autoCapitalize="none" placeholder="8 caractères minimum" placeholderTextColor={theme.textSecondary} style={[styles.input, { color: theme.text }]} />
+                <TextInput 
+                  value={password} 
+                  onChangeText={setPassword} 
+                  secureTextEntry={!showPassword} 
+                  autoCapitalize="none" 
+                  placeholder="8 caractères minimum" 
+                  placeholderTextColor={theme.textSecondary} 
+                  style={[styles.input, { color: theme.text }]} 
+                />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                   <FontAwesome name={showPassword ? 'eye-slash' : 'eye'} size={17} color={theme.textSecondary} />
                 </TouchableOpacity>
@@ -108,7 +164,15 @@ export default function RegisterScreen() {
               <Text style={[styles.label, { color: theme.text }]}>Confirmer le mot de passe</Text>
               <View style={[styles.inputWrapper, { borderColor: passwordsMatch ? theme.success : passwordsMismatch ? theme.error : theme.border, backgroundColor: passwordsMatch ? theme.successLight : passwordsMismatch ? theme.errorLight : theme.inputBackground }]}>
                 <FontAwesome name="lock" size={18} color={passwordsMatch ? theme.success : passwordsMismatch ? theme.error : theme.textSecondary} style={styles.inputIcon} />
-                <TextInput value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry={!showConfirmPassword} autoCapitalize="none" placeholder="Retape ton mot de passe" placeholderTextColor={theme.textSecondary} style={[styles.input, { color: theme.text }]} />
+                <TextInput 
+                  value={confirmPassword} 
+                  onChangeText={setConfirmPassword} 
+                  secureTextEntry={!showConfirmPassword} 
+                  autoCapitalize="none" 
+                  placeholder="Retape ton mot de passe" 
+                  placeholderTextColor={theme.textSecondary} 
+                  style={[styles.input, { color: theme.text }]} 
+                />
                 <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                   <FontAwesome name={showConfirmPassword ? 'eye-slash' : 'eye'} size={17} color={theme.textSecondary} />
                 </TouchableOpacity>
@@ -147,25 +211,90 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scrollContent: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, paddingVertical: 32 },
+  scrollContent: { 
+    flexGrow: 1, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    paddingHorizontal: 20, 
+    paddingVertical: 32 
+  },
   card: { alignSelf: 'center' },
-  backButton: { marginBottom: 12, width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  backButton: { 
+    marginBottom: 12, 
+    width: 36, 
+    height: 36, 
+    borderRadius: 18, 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
   logoContainer: { alignItems: 'center', marginBottom: 24 },
-  title: { fontSize: 24, fontWeight: '800', marginTop: 14, letterSpacing: -0.5 },
+  title: { 
+    fontSize: 24, 
+    fontWeight: '800', 
+    marginTop: 14, 
+    letterSpacing: -0.5 
+  },
   titleSmall: { fontSize: 20 },
-  subtitle: { fontSize: 14, marginTop: 4, textAlign: 'center' },
-  errorBox: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 16, gap: 8 },
+  subtitle: { 
+    fontSize: 14, 
+    marginTop: 4, 
+    textAlign: 'center' 
+  },
+  errorBox: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1, 
+    borderRadius: 12, 
+    padding: 12, 
+    marginBottom: 16, 
+    gap: 8 
+  },
   errorText: { flex: 1, fontSize: 13 },
+  slowBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  slowText: { flex: 1, fontSize: 13, fontWeight: '500' },
   inputGroup: { marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6 },
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderRadius: 14, paddingHorizontal: 14, height: 52 },
+  inputWrapper: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    borderWidth: 1.5, 
+    borderRadius: 14, 
+    paddingHorizontal: 14, 
+    height: 52 
+  },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontSize: 15, height: '100%' },
-  matchRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 6, marginLeft: 4 },
+  matchRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginTop: 6, 
+    gap: 6, 
+    marginLeft: 4 
+  },
   matchText: { fontSize: 12, fontWeight: '500' },
-  button: { flexDirection: 'row', borderRadius: 14, height: 54, alignItems: 'center', justifyContent: 'center', marginTop: 8, elevation: 5 },
-  buttonDisabled: { opacity: 0.6 },
+  button: { 
+    flexDirection: 'row', 
+    borderRadius: 14, 
+    height: 54, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginTop: 8, 
+    elevation: 5 
+  },
+  buttonDisabled: { opacity: 0.6, elevation: 0 },
   buttonText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
-  linkContainer: { alignItems: 'center', paddingVertical: 12, marginTop: 16 },
+  linkContainer: { 
+    alignItems: 'center', 
+    paddingVertical: 12, 
+    marginTop: 16 
+  },
   linkText: { fontSize: 14 },
 });

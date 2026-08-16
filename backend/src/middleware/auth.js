@@ -19,7 +19,7 @@ async function authMiddleware(req, res, next) {
 
     // ✅ Bloque l'accès aux routes protégées tant que l'email n'est pas vérifié
     if (!user.is_verified) {
-      return res.status(403).json({ success: false, message: 'Email non verifie' });
+      return res.status(403).json({ success: false, message: 'Email non vérifié' });
     }
 
     req.user = user;

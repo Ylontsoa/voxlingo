@@ -1,3 +1,4 @@
+// mobile/app/(app)/practice/[lessonId]/[phraseIndex].tsx
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,7 +38,10 @@ export default function PracticeScreen() {
   const [showResult, setShowResult] = useState(false);
 
   const { speak, isSpeaking, rate, setRate } = useSpeechSynthesis();
-  const { record, isRecording, transcription, error, volumeLevel, reset } = useSpeechRecognition(getIsoCode(lesson?.language));
+  const { record, isRecording, transcription, error, volumeLevel, reset } = useSpeechRecognition(
+    getIsoCode(lesson?.language),
+    5000 // ✅ 5 secondes
+  );
   const { saveProgress } = useProgress();
 
   const currentPhrase = lesson?.phrases[currentIndex];

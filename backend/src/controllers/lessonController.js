@@ -1,5 +1,8 @@
+// backend/src/controllers/lessonController.js
 const { Lesson, Phrase, Progress } = require('../models');
 const { Op, fn, col } = require('sequelize');
+const { textToSpeechForLearning } = require('../services/elevenLabsService'); // ✅ AJOUT
+const { User } = require('../models'); // ✅ AJOUT pour récupérer le niveau de l'utilisateur
 
 // GET /api/lessons?language=anglais&level=débutant&theme=voyage
 async function getLessons(req, res, next) {
@@ -11,7 +14,7 @@ async function getLessons(req, res, next) {
     if (language) where.language = language;
     if (level) where.level = level;
     if (theme) where.theme = theme;
-    if (search) where.title = { [Op.like]: `%${search}%` }; // ✅ Corrigé : like au lieu de iLike (MySQL)
+    if (search) where.title = { [Op.iLike]: `%${search}%` }; // ✅ Op.like -> Op.iLike (compat Postgres)
 
     const lessons = await Lesson.findAll({
       where,
@@ -19,7 +22,7 @@ async function getLessons(req, res, next) {
     });
 
     if (lessons.length === 0) {
-      return res.status(200).json({ // ✅ Corrigé : 200 au lieu de 404
+      return res.status(200).json({
         success: true,
         lessons: [],
         message: 'Aucune lecon disponible pour cette langue',
@@ -73,7 +76,7 @@ async function getContinueLesson(req, res, next) {
 
     const lastProgress = await Progress.findOne({
       where: { user_id: userId },
-      order: [['attempted_at', 'DESC']], // ✅ Corrigé : attempted_at
+      order: [['attempted_at', 'DESC']],
       raw: true,
     });
 
@@ -115,7 +118,7 @@ async function getContinueLesson(req, res, next) {
   }
 }
 
-// GET /api/lessons/:id
+// GET /api/lessons/:id (MODIFIÉ avec option voix)
 async function getLessonById(req, res, next) {
   try {
     const lesson = await Lesson.findByPk(req.params.id, {
@@ -126,10 +129,110 @@ async function getLessonById(req, res, next) {
       return res.status(404).json({ success: false, message: 'Lecon introuvable' });
     }
 
-    res.json({ success: true, lesson });
+    // 🎤 Ajout des voix pour les phrases (optionnel)
+    const withVoice = req.query.withVoice === 'true';
+    let phrasesWithVoice = lesson.phrases;
+
+    if (withVoice) {
+      try {
+        // Récupérer le niveau de l'utilisateur
+        const user = await User.findByPk(req.user.id);
+        const level = user?.level || 1;
+        const learningLevel = level < 5 ? 'beginner' : level < 15 ? 'intermediate' : 'advanced';
+
+        // Générer les voix pour chaque phrase
+        phrasesWithVoice = await Promise.all(
+          lesson.phrases.map(async (phrase) => {
+            try {
+              // Audio de la phrase cible
+              const phraseAudio = await textToSpeechForLearning(
+                phrase.text_target,
+                learningLevel
+              );
+              
+              // Audio de la traduction
+              const translationAudio = await textToSpeechForLearning(
+                phrase.text_translation,
+                learningLevel
+              );
+
+              return {
+                ...phrase.toJSON(),
+                phraseAudio: phraseAudio.toString('base64'),
+                translationAudio: translationAudio.toString('base64'),
+              };
+            } catch (voiceError) {
+              console.error('[Voice] Erreur pour phrase:', phrase.id, voiceError.message);
+              return phrase.toJSON();
+            }
+          })
+        );
+      } catch (error) {
+        console.error('[Voice] Erreur génération voix:', error.message);
+        phrasesWithVoice = lesson.phrases;
+      }
+    }
+
+    res.json({
+      success: true,
+      lesson: {
+        ...lesson.toJSON(),
+        phrases: phrasesWithVoice,
+        voiceEnabled: withVoice,
+      },
+    });
   } catch (error) {
     next(error);
   }
 }
 
-module.exports = { getLessons, getContinueLesson, getLessonById };
+// ✅ NOUVELLE FONCTION : Prononciation des phrases
+async function pronouncePhrase(req, res, next) {
+  try {
+    const { phrase, translation, level = 'beginner' } = req.body;
+
+    if (!phrase) {
+      return res.status(400).json({ success: false, message: 'Phrase requise' });
+    }
+
+    // 🎤 Générer l'audio de la phrase
+    let phraseAudio = null;
+    let translationAudio = null;
+
+    try {
+      // Audio de la phrase
+      phraseAudio = await textToSpeechForLearning(phrase, level);
+      
+      // Audio de la traduction (si fournie)
+      if (translation) {
+        translationAudio = await textToSpeechForLearning(translation, level);
+      }
+    } catch (voiceError) {
+      console.error('[Voice] Erreur génération audio:', voiceError.message);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Erreur de synthèse vocale',
+        details: voiceError.message 
+      });
+    }
+
+    res.json({
+      success: true,
+      phraseAudio: phraseAudio.toString('base64'),
+      translationAudio: translationAudio ? translationAudio.toString('base64') : null,
+      phrase,
+      translation,
+      level,
+    });
+  } catch (error) {
+    console.error('[Pronounce] Erreur:', error.message);
+    next(error);
+  }
+}
+
+module.exports = {
+  getLessons,
+  getContinueLesson,
+  getLessonById,
+  pronouncePhrase, // ✅ AJOUTER
+};

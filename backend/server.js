@@ -19,17 +19,20 @@ initSocket(io);
 async function startServer() {
   try {
     await sequelize.authenticate();
-    console.log('Connexion MySQL reussie');
+    console.log('✅ Connexion PostgreSQL réussie');
 
+    // Force: false pour ne pas perdre les données
+    // Alter: true pour synchroniser les modifications
     await sequelize.sync({ alter: true });
-    console.log('Modeles synchronises avec la base de donnees');
+    console.log('✅ Modèles synchronisés avec la base de données');
 
     server.listen(PORT, '0.0.0.0', () => {
-      console.log('Serveur VoxLingo (+ Socket.io) demarre sur le port ' + PORT);
-      console.log('Accessible via http://localhost:' + PORT);
+      console.log('🚀 Serveur VoxLingo (+ Socket.io) démarré sur le port ' + PORT);
+      console.log('📡 Accessible via http://localhost:' + PORT);
+      console.log('🗄️  Base de données: PostgreSQL');
     });
   } catch (error) {
-    console.error('Erreur de connexion a la base de donnees:', error);
+    console.error('❌ Erreur de connexion à la base de données:', error.message);
     process.exit(1);
   }
 }

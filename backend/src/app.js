@@ -1,3 +1,4 @@
+// backend/src/app.js (MODIFIÉ)
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -9,7 +10,9 @@ const leaderboardRoutes = require('./routes/leaderboard');
 const chatRoutes = require('./routes/chat');
 const conversationRoutes = require('./routes/conversations');
 const userRoutes = require('./routes/users');
-const aiRoutes = require('./routes/ai'); // ✅ Ajout
+const aiRoutes = require('./routes/ai');
+const ttsRoutes = require('./routes/tts'); // ✅ AJOUTER
+const voiceRoutes = require('./routes/voice.routes'); // ✅ AJOUTER (optionnel)
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -24,6 +27,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'VoxLingo API is running' });
 });
 
+// Routes existantes
 app.use('/api/auth', authRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/progress', progressRoutes);
@@ -32,7 +36,11 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/ai', aiRoutes); // ✅ Ajout
+app.use('/api/ai', aiRoutes);
+
+// ✅ NOUVELLES ROUTES VOCALES
+app.use('/api/tts', ttsRoutes);
+app.use('/api/voice', voiceRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route non trouvée' });

@@ -4,7 +4,7 @@ import { getToken, deleteToken } from '../storage/secureStorage';
 
 const client = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 60000,
 });
 
 client.interceptors.request.use(async (config) => {

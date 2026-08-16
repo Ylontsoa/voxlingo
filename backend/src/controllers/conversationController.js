@@ -1,5 +1,7 @@
+// backend/src/controllers/conversationController.js
 const { Op } = require('sequelize');
 const { Conversation, ConversationParticipant, TranslationMessage, User } = require('../models');
+const { textToSpeech } = require('../services/elevenLabsService'); // ✅ AJOUT
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -269,10 +271,72 @@ async function getMessages(req, res, next) {
   }
 }
 
+// ✅ NOUVELLE FONCTION : Message vocal en conversation
+async function speakMessage(req, res, next) {
+  try {
+    const { code } = req.params;
+    const { text, language = 'fr' } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ success: false, message: 'Texte requis' });
+    }
+
+    // Vérifier que la conversation existe
+    const conversation = await Conversation.findOne({ where: { code } });
+    if (!conversation) {
+      return res.status(404).json({ success: false, message: 'Conversation introuvable' });
+    }
+
+    // Vérifier que l'utilisateur est bien dans la conversation
+    const participant = await ConversationParticipant.findOne({
+      where: {
+        conversation_id: conversation.id,
+        user_id: req.user.id,
+      },
+    });
+
+    if (!participant) {
+      return res.status(403).json({ success: false, message: 'Vous n\'êtes pas dans cette conversation' });
+    }
+
+    // 🎤 Générer l'audio du message
+    let audio = null;
+    try {
+      // Utiliser la voix d'Alice (éducative) avec une vitesse adaptée
+      const audioBuffer = await textToSpeech(text, 'Xb7hH8MSUJpSbSDYk0k2', {
+        speed: 0.9,
+        stability: 0.5,
+        similarity_boost: 0.75,
+      });
+      audio = audioBuffer.toString('base64');
+    } catch (voiceError) {
+      console.error('[Voice] Erreur génération audio:', voiceError.message);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Erreur de synthèse vocale',
+        details: voiceError.message 
+      });
+    }
+
+    res.json({
+      success: true,
+      audio,
+      text,
+      language,
+      code,
+      conversationId: conversation.id,
+    });
+  } catch (error) {
+    console.error('[SpeakMessage] Erreur:', error.message);
+    next(error);
+  }
+}
+
 module.exports = {
   createConversation,
   joinConversation,
   startConversation,
   getMyConversations,
   getMessages,
+  speakMessage, // ✅ AJOUTER
 };

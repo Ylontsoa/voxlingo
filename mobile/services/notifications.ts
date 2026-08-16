@@ -1,4 +1,12 @@
-import { Platform } from 'react-native';
+import { Platform, LogBox } from 'react-native';
+
+// ✅ Masque le warning bénin d'expo-notifications sous Expo Go (SDK 53+).
+// Ce message concerne uniquement les notifications PUSH DISTANTES, que
+// cette app n'utilise pas — on ne fait que des rappels locaux programmés,
+// qui fonctionnent normalement sous Expo Go malgré ce message.
+LogBox.ignoreLogs([
+  'expo-notifications: Android Push notifications',
+]);
 
 // ✅ Charger expo-notifications avec try/catch pour Expo Go
 let Notifications: any = null;

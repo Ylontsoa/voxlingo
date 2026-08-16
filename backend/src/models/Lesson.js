@@ -12,8 +12,11 @@ const Lesson = sequelize.define('Lesson', {
     allowNull: false,
   },
   level: {
-    type: DataTypes.ENUM('débutant', 'intermédiaire', 'avancé'),
+    type: DataTypes.STRING,
     allowNull: false,
+    validate: {
+      isIn: [['débutant', 'intermédiaire', 'avancé']],
+    },
   },
   theme: {
     type: DataTypes.STRING,

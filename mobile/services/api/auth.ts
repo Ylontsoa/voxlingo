@@ -31,7 +31,6 @@ export async function updateAvatarRequest(avatar_url: string) {
   return data;
 }
 
-// ✅ Upload avatar (photo locale → serveur)
 export async function uploadAvatarRequest(localUri: string) {
   const formData = new FormData();
   const filename = localUri.split('/').pop() || 'avatar.jpg';

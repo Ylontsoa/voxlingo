@@ -18,6 +18,7 @@ import BadgeList from '../../components/profile/BadgeList';
 import { getAllBadges } from '../../services/badges';
 import { updateAvatarRequest, uploadAvatarRequest } from '../../services/api/auth';
 import { AVATARS } from '../../constants/avatars';
+import { LANGUAGES } from '../../constants/languages'; // ✅ AJOUT
 
 const RING_SIZE = 108;
 const RING_STROKE = 4;
@@ -30,9 +31,8 @@ export default function ProfileScreen() {
   const { theme } = useTheme();
   const { days, fetchCalendar } = useCalendar();
   const [pickerVisible, setPickerVisible] = useState(false);
-  const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now()); // ✅ Pour forcer le rafraîchissement
+  const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now());
 
-  // ✅ Rafraîchir quand l'écran devient visible
   useFocusEffect(
     useCallback(() => {
       fetchStats();
@@ -48,12 +48,17 @@ export default function ProfileScreen() {
       await updateAvatarRequest(url);
     }
     await refreshUser();
-    setAvatarTimestamp(Date.now()); // ✅ Force le rafraîchissement de l'image
+    setAvatarTimestamp(Date.now());
   }
 
   async function handleLogout() {
     await logout();
     router.replace('/(auth)/login');
+  }
+
+  // ✅ AJOUT - Navigue vers l'écran de sélection de langue
+  function handleChangeLanguage() {
+    router.push('/(auth)/language-select');
   }
 
   const level = stats?.level ?? 1;
@@ -67,6 +72,9 @@ export default function ProfileScreen() {
     ? `${user.profile_image_url}?t=${avatarTimestamp}` 
     : AVATARS[0];
 
+  // ✅ AJOUT - Trouve la langue actuelle
+  const currentLanguage = LANGUAGES.find((l) => l.code === user?.target_language);
+
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -77,7 +85,6 @@ export default function ProfileScreen() {
               <Circle cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RING_RADIUS} stroke="rgba(255,255,255,0.25)" strokeWidth={RING_STROKE} fill="none" />
               <Circle cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={RING_RADIUS} stroke="#ffffff" strokeWidth={RING_STROKE} fill="none" strokeDasharray={RING_CIRCUMFERENCE} strokeDashoffset={ringOffset} strokeLinecap="round" rotation="-90" origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`} />
             </Svg>
-            {/* ✅ Avatar avec cache-busting */}
             <Image source={{ uri: avatarUri }} style={styles.avatar} />
             <View style={styles.editBadge}>
               <FontAwesome name="pencil" size={11} color="#6366F1" />
@@ -107,6 +114,7 @@ export default function ProfileScreen() {
         {/* ===== Infos personnelles ===== */}
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>INFORMATIONS PERSONNELLES</Text>
+          
           <View style={styles.infoRow}>
             <View style={[styles.infoIcon, { backgroundColor: theme.primaryLight }]}>
               <FontAwesome name="user" size={14} color={theme.primary} />
@@ -119,7 +127,9 @@ export default function ProfileScreen() {
               <FontAwesome name="pencil" size={13} color={theme.primary} />
             </TouchableOpacity>
           </View>
+
           <View style={[styles.divider, { backgroundColor: theme.border }]} />
+          
           <View style={styles.infoRow}>
             <View style={[styles.infoIcon, { backgroundColor: theme.primaryLight }]}>
               <FontAwesome name="envelope" size={14} color={theme.primary} />
@@ -129,8 +139,26 @@ export default function ProfileScreen() {
               <Text style={[styles.infoValue, { color: theme.text }]}>{user?.email}</Text>
             </View>
           </View>
+
+          {/* ✅ AJOUT - Ligne "Langue apprise" avec bouton pour changer */}
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+          <View style={styles.infoRow}>
+            <View style={[styles.infoIcon, { backgroundColor: theme.primaryLight }]}>
+              <FontAwesome name="globe" size={14} color={theme.primary} />
+            </View>
+            <View style={styles.infoContent}>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Langue apprise</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {currentLanguage ? `${currentLanguage.flag} ${currentLanguage.label}` : 'Non définie'}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={handleChangeLanguage} style={styles.editBtn}>
+              <FontAwesome name="pencil" size={13} color={theme.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
+        {/* Reste du code inchangé... */}
         {/* ===== Progression XP ===== */}
         {stats && (
           <View style={[styles.card, { backgroundColor: theme.surface }]}>
@@ -153,7 +181,7 @@ export default function ProfileScreen() {
           <StreakCalendar practicedDays={days} />
         </View>
 
-        {/* ===== Reglages ===== */}
+        {/* ===== Réglages ===== */}
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
           <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>RÉGLAGES</Text>
           <View style={styles.settingsRow}><ReminderToggle /></View>
@@ -161,7 +189,7 @@ export default function ProfileScreen() {
           <View style={styles.settingsRow}><ThemeSelector /></View>
         </View>
 
-        {/* ===== A propos + Deconnexion ===== */}
+        {/* ===== À propos + Déconnexion ===== */}
         <View style={[styles.card, { backgroundColor: theme.surface, paddingVertical: 4 }]}>
           <TouchableOpacity onPress={() => router.push('/about')} style={styles.listRow} activeOpacity={0.7}>
             <View style={[styles.listIconWrap, { backgroundColor: theme.primaryLight }]}>

@@ -1,3 +1,4 @@
+// mobile/app/(app)/review.tsx
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +12,7 @@ import { useSimilarityScore } from '../hooks/useSimilarityScore';
 import { useProgress } from '../hooks/useProgress';
 import { getIsoCode } from '../constants/languages';
 import { useTheme } from '../hooks/useTheme';
+import { voiceService } from '../services/voice.service'; // ✅ AJOUT
 import PhraseDisplay from '../components/practice/PhraseDisplay';
 import AudioPlayer from '../components/practice/AudioPlayer';
 import RecordButton from '../components/practice/RecordButton';
@@ -26,6 +28,7 @@ export default function ReviewScreen() {
   const { saveProgress } = useProgress();
   const [index, setIndex] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [useElevenLabs, setUseElevenLabs] = useState(true); // ✅ AJOUT
 
   const currentPhrase = phrases[index];
   const isoLang = getIsoCode(currentPhrase?.Lesson?.language);
@@ -49,6 +52,30 @@ export default function ReviewScreen() {
       });
     }
   }, [transcription]);
+
+  // ✅ NOUVELLE FONCTION : Lecture avec ElevenLabs
+  const handleSpeakWithElevenLabs = async (text: string) => {
+    try {
+      await voiceService.speak(text, {
+        voice: 'alice',
+        speed: 0.85,
+        emotion: 'neutral',
+      });
+    } catch (error) {
+      console.error('[Review] Erreur ElevenLabs:', error);
+      // Fallback vers la voix native
+      speak(text, currentPhrase?.Lesson?.language || 'fr');
+    }
+  };
+
+  // ✅ Lecture avec choix entre ElevenLabs et voix native
+  const handleSpeak = (text: string) => {
+    if (useElevenLabs) {
+      handleSpeakWithElevenLabs(text);
+    } else {
+      speak(text, currentPhrase?.Lesson?.language || 'fr');
+    }
+  };
 
   function handleNext() {
     setShowResult(false);
@@ -98,7 +125,14 @@ export default function ReviewScreen() {
           </Text>
         </View>
 
-        <View style={{ width: 36 }} />
+        {/* ✅ AJOUT : Toggle ElevenLabs */}
+        <TouchableOpacity onPress={() => setUseElevenLabs(v => !v)} style={[styles.voiceToggle, { backgroundColor: theme.surface }]}>
+          <FontAwesome 
+            name={useElevenLabs ? 'magic' : 'volume-up'} 
+            size={16} 
+            color={useElevenLabs ? theme.primary : theme.textSecondary} 
+          />
+        </TouchableOpacity>
       </View>
 
       {/* 📊 Barre de progression de la session */}
@@ -113,7 +147,8 @@ export default function ReviewScreen() {
       <View style={styles.content}>
         <View style={[styles.phraseCard, { backgroundColor: theme.surface }]}>
           <PhraseDisplay target={currentPhrase.text_target} translation={currentPhrase.text_translation} />
-          <AudioPlayer onPress={() => speak(currentPhrase.text_target, currentPhrase.Lesson.language)} isSpeaking={isSpeaking} />
+          {/* ✅ MODIFIÉ : Utiliser handleSpeak avec ElevenLabs */}
+          <AudioPlayer onPress={() => handleSpeak(currentPhrase.text_target)} isSpeaking={isSpeaking} />
         </View>
 
         <View style={styles.interactionZone}>
@@ -145,36 +180,68 @@ export default function ReviewScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingTop: 8, paddingBottom: 12,
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    paddingHorizontal: 20, 
+    paddingTop: 8, 
+    paddingBottom: 12,
   },
-  reviewBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999 },
+  reviewBadge: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 6, 
+    paddingHorizontal: 14, 
+    paddingVertical: 7, 
+    borderRadius: 999 
+  },
   reviewBadgeText: { fontSize: 12, fontWeight: '700' },
   closeButton: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  voiceToggle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' }, // ✅ AJOUT
 
   progressTrack: {
-    height: 6, marginHorizontal: 20, borderRadius: 3, overflow: 'hidden', marginBottom: 20,
+    height: 6, 
+    marginHorizontal: 20, 
+    borderRadius: 3, 
+    overflow: 'hidden', 
+    marginBottom: 20,
   },
   progressFill: { height: 6, borderRadius: 3 },
 
   content: { flex: 1, paddingHorizontal: 20 },
 
   phraseCard: {
-    borderRadius: 20, padding: 18, marginBottom: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 1,
+    borderRadius: 20, 
+    padding: 18, 
+    marginBottom: 16,
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.05, 
+    shadowRadius: 8, 
+    elevation: 1,
   },
 
   interactionZone: { flex: 1, justifyContent: 'center' },
 
   resultCard: {
-    borderRadius: 20, padding: 18, marginBottom: 8,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 1,
+    borderRadius: 20, 
+    padding: 18, 
+    marginBottom: 8,
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.05, 
+    shadowRadius: 8, 
+    elevation: 1,
   },
 
   nextButtonWrap: { borderRadius: 16, marginTop: 16 },
   nextButton: {
-    flexDirection: 'row', borderRadius: 16, height: 56,
-    alignItems: 'center', justifyContent: 'center', gap: 10,
+    flexDirection: 'row', 
+    borderRadius: 16, 
+    height: 56,
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    gap: 10,
   },
   nextButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 

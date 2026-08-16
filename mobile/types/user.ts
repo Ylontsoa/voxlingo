@@ -1,7 +1,7 @@
 export interface User {
   id: number;
   email: string;
-  username?: string | null; // ✅ Ajout
+  username?: string | null;
   target_language?: string | null;
   profile_image_url?: string | null;
   current_streak: number;

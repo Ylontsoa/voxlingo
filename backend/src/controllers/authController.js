@@ -1,7 +1,9 @@
+// backend/src/controllers/authController.js
 const { User } = require('../models');
 const { hashPassword, comparePassword } = require('../utils/hashPassword');
 const { generateToken } = require('../utils/generateToken');
 const { sendVerificationEmail } = require('../services/emailService');
+const { speakWelcome } = require('../services/elevenLabsService');
 
 const verificationCodes = new Map();
 
@@ -14,7 +16,7 @@ async function register(req, res, next) {
 
     // ✅ Si un compte existe déjà ET est vérifié → vrai conflit
     if (existingUser && existingUser.is_verified) {
-      return res.status(409).json({ success: false, message: 'Cet email est deja utilise' });
+      return res.status(409).json({ success: false, message: 'Cet email est déjà utilisé' });
     }
 
     const password_hash = await hashPassword(password);
@@ -41,11 +43,20 @@ async function register(req, res, next) {
 
     const token = generateToken(user.id);
 
+    // 🎤 Message de bienvenue vocal
+    let welcomeAudio = null;
+    try {
+      welcomeAudio = await speakWelcome(username || 'utilisateur', 0);
+    } catch (voiceError) {
+      console.error('[Voice] Erreur bienvenue:', voiceError.message);
+    }
+
     res.status(201).json({
       success: true,
       token,
       user: { id: user.id, email: user.email, username: user.username },
-      message: 'Code de verification envoye par email',
+      message: 'Code de vérification envoyé par email',
+      welcomeAudio: welcomeAudio ? welcomeAudio.toString('base64') : null,
     });
   } catch (error) {
     next(error);
@@ -69,10 +80,18 @@ async function login(req, res, next) {
 
     // ✅ Bloque la connexion tant que l'email n'est pas vérifié
     if (!user.is_verified) {
-      return res.status(403).json({ success: false, message: 'Merci de verifier ton email avant de te connecter' });
+      return res.status(403).json({ success: false, message: 'Merci de vérifier ton email avant de te connecter' });
     }
 
     const token = generateToken(user.id);
+
+    // 🎤 Message de bienvenue vocal avec streak
+    let welcomeAudio = null;
+    try {
+      welcomeAudio = await speakWelcome(user.username || 'utilisateur', user.current_streak || 0);
+    } catch (voiceError) {
+      console.error('[Voice] Erreur bienvenue:', voiceError.message);
+    }
 
     res.json({
       success: true,
@@ -84,6 +103,7 @@ async function login(req, res, next) {
         target_language: user.target_language,
         profile_image_url: user.profile_image_url,
       },
+      welcomeAudio: welcomeAudio ? welcomeAudio.toString('base64') : null,
     });
   } catch (error) {
     next(error);
@@ -153,7 +173,7 @@ async function updateProfile(req, res, next) {
 async function uploadAvatar(req, res, next) {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: 'Aucun fichier recu' });
+      return res.status(400).json({ success: false, message: 'Aucun fichier reçu' });
     }
 
     const user = req.user;
@@ -181,7 +201,7 @@ async function sendVerificationCode(req, res, next) {
       console.log(`📧 Code pour ${email} : ${code}`);
     }
 
-    res.json({ success: true, message: 'Code envoye' });
+    res.json({ success: true, message: 'Code envoyé' });
   } catch (error) {
     next(error);
   }
@@ -194,11 +214,11 @@ async function verifyCode(req, res, next) {
     const stored = verificationCodes.get(email);
 
     if (!stored) {
-      return res.status(400).json({ success: false, message: 'Aucun code demande' });
+      return res.status(400).json({ success: false, message: 'Aucun code demandé' });
     }
     if (Date.now() > stored.expiresAt) {
       verificationCodes.delete(email);
-      return res.status(400).json({ success: false, message: 'Code expire' });
+      return res.status(400).json({ success: false, message: 'Code expiré' });
     }
     if (stored.code !== code) {
       return res.status(400).json({ success: false, message: 'Code incorrect' });
@@ -212,7 +232,7 @@ async function verifyCode(req, res, next) {
     }
 
     verificationCodes.delete(email);
-    res.json({ success: true, message: 'Code verifie' });
+    res.json({ success: true, message: 'Code vérifié' });
   } catch (error) {
     next(error);
   }

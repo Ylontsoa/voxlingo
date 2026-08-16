@@ -1,5 +1,7 @@
+// backend/src/controllers/progressController.js
 const { Progress, User, Phrase, Lesson } = require('../models');
 const { fn, col, Op } = require('sequelize');
+const { speakFeedback, textToSpeechForLearning } = require('../services/elevenLabsService'); // ✅ AJOUT
 
 const XP_SUCCESS = 10;
 const XP_FAIL = 2;
@@ -10,7 +12,13 @@ async function saveProgress(req, res, next) {
     const { phrase_id, lesson_id, score, transcription } = req.body;
     const userId = req.user.id;
 
-    const progress = await Progress.create({ user_id: userId, phrase_id, lesson_id, score, transcription });
+    const progress = await Progress.create({ 
+      user_id: userId, 
+      phrase_id, 
+      lesson_id, 
+      score, 
+      transcription 
+    });
 
     const user = await User.findByPk(userId);
     const earnedXp = score >= 80 ? XP_SUCCESS : XP_FAIL;
@@ -20,7 +28,23 @@ async function saveProgress(req, res, next) {
 
     await updateStreak(userId);
 
-    res.status(201).json({ success: true, progress, earnedXp, xp: user.xp, level: user.level });
+    // 🎤 Feedback vocal personnalisé
+    let feedbackAudio = null;
+    try {
+      const level = user.level < 5 ? 'beginner' : user.level < 15 ? 'intermediate' : 'advanced';
+      feedbackAudio = await speakFeedback(score, level);
+    } catch (voiceError) {
+      console.error('[Voice] Erreur feedback:', voiceError.message);
+    }
+
+    res.status(201).json({ 
+      success: true, 
+      progress, 
+      earnedXp, 
+      xp: user.xp, 
+      level: user.level,
+      feedbackAudio: feedbackAudio ? feedbackAudio.toString('base64') : null, // ✅ AJOUT
+    });
   } catch (error) {
     next(error);
   }
@@ -45,6 +69,29 @@ async function getStats(req, res, next) {
       where: { user_id: userId, attempted_at: { [Op.gte]: todayStart } }
     });
 
+    // 🎤 Message vocal de motivation (optionnel)
+    let motivationAudio = null;
+    try {
+      const streak = user.current_streak || 0;
+      let motivationText = '';
+      if (streak >= 30) {
+        motivationText = `Incroyable ! ${streak} jours de suite ! Tu es un champion !`;
+      } else if (streak >= 7) {
+        motivationText = `Super ! ${streak} jours de suite ! Continue sur cette lancée !`;
+      } else if (streak >= 3) {
+        motivationText = `Bien parti ! ${streak} jours de suite !`;
+      } else if (streak > 0) {
+        motivationText = `Bon début ! ${streak} jours de suite !`;
+      }
+
+      if (motivationText) {
+        const level = user.level < 5 ? 'beginner' : user.level < 15 ? 'intermediate' : 'advanced';
+        motivationAudio = await textToSpeechForLearning(motivationText, level);
+      }
+    } catch (voiceError) {
+      console.error('[Voice] Erreur motivation:', voiceError.message);
+    }
+
     res.json({
       success: true,
       stats: {
@@ -57,6 +104,7 @@ async function getStats(req, res, next) {
         total_phrases: totalPhrases,
         perfect_count: perfectCount,
         today_count: todayCount,
+        motivation_audio: motivationAudio ? motivationAudio.toString('base64') : null, // ✅ AJOUT
       },
     });
   } catch (error) {
@@ -124,6 +172,58 @@ async function getReviewPhrases(req, res, next) {
   }
 }
 
+// ✅ NOUVELLE FONCTION : Feedback vocal personnalisé
+async function getVoiceFeedback(req, res, next) {
+  try {
+    const { score, level = 'intermediate' } = req.body;
+
+    if (score === undefined) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Score requis' 
+      });
+    }
+
+    // 🎤 Générer le feedback vocal
+    let feedbackAudio = null;
+    let feedbackText = '';
+
+    try {
+      const result = await speakFeedback(score, level);
+      feedbackAudio = result;
+      
+      // Récupérer le texte du feedback (pour affichage)
+      if (score >= 90) {
+        feedbackText = 'Excellent ! Très bonne prononciation !';
+      } else if (score >= 70) {
+        feedbackText = 'Bien ! Continue comme ça !';
+      } else if (score >= 50) {
+        feedbackText = 'Pas mal, entraîne-toi encore un peu.';
+      } else {
+        feedbackText = 'Réessaie, tu vas y arriver !';
+      }
+    } catch (voiceError) {
+      console.error('[Voice] Erreur feedback:', voiceError.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Erreur de génération du feedback vocal',
+        details: voiceError.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      text: feedbackText,
+      audio: feedbackAudio.toString('base64'),
+      score,
+      level,
+    });
+  } catch (error) {
+    console.error('[VoiceFeedback] Erreur:', error.message);
+    next(error);
+  }
+}
+
 async function updateStreak(userId) {
   const user = await User.findByPk(userId);
   const now = new Date();
@@ -148,4 +248,10 @@ async function updateStreak(userId) {
   await user.save();
 }
 
-module.exports = { saveProgress, getStats, getCalendar, getReviewPhrases };
+module.exports = { 
+  saveProgress, 
+  getStats, 
+  getCalendar, 
+  getReviewPhrases,
+  getVoiceFeedback, // ✅ AJOUTER
+};

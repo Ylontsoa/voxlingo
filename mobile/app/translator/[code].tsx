@@ -1,3 +1,4 @@
+// mobile/app/(app)/translator/[code].tsx
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,11 +9,13 @@ import { useTranslatorChat } from '../../hooks/useTranslatorChat';
 import { useSpeechSynthesis } from '../../hooks/useSpeechSynthesis';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { getIsoCode, LANGUAGES } from '../../constants/languages';
+import { voiceService } from '../../services/voice.service'; // ✅ AJOUT
 
 export default function TranslatorRoomScreen() {
   const { code } = useLocalSearchParams<{ code: string }>();
   const { theme } = useTheme();
   const [input, setInput] = useState('');
+  const [useElevenLabs, setUseElevenLabs] = useState(true); // ✅ AJOUT
   const lastSpokenId = useRef<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
@@ -27,14 +30,28 @@ export default function TranslatorRoomScreen() {
     }
   }, [transcription, isRecording]);
 
+  // ✅ MODIFIÉ : Utiliser ElevenLabs pour la lecture automatique des messages reçus
   React.useEffect(() => {
     if (messages.length === 0) return;
     const last = messages[messages.length - 1];
     if (!last.isMine && last.id !== lastSpokenId.current) {
       lastSpokenId.current = last.id;
-      speak(last.translatedText, last.translatedLanguage);
+      
+      if (useElevenLabs) {
+        // ✅ Utiliser ElevenLabs
+        voiceService.speak(last.translatedText, {
+          voice: 'alice',
+          speed: 0.85,
+          emotion: 'neutral',
+        }).catch(() => {
+          // Fallback vers la voix native
+          speak(last.translatedText, last.translatedLanguage);
+        });
+      } else {
+        speak(last.translatedText, last.translatedLanguage);
+      }
     }
-  }, [messages]);
+  }, [messages, useElevenLabs]);
 
   function handleSend() {
     if (!input.trim() || sending) return;
@@ -63,7 +80,14 @@ export default function TranslatorRoomScreen() {
             {peerConnected ? 'Connecte' : "En attente de l'autre personne..."}
           </Text>
         </View>
-        <View style={{ width: 36 }} />
+        {/* ✅ AJOUT : Toggle ElevenLabs */}
+        <TouchableOpacity onPress={() => setUseElevenLabs(v => !v)} style={[styles.voiceToggle, { backgroundColor: theme.surface }]}>
+          <FontAwesome 
+            name={useElevenLabs ? 'magic' : 'volume-up'} 
+            size={16} 
+            color={useElevenLabs ? theme.primary : theme.textSecondary} 
+          />
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -108,8 +132,15 @@ export default function TranslatorRoomScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 8, paddingBottom: 12 },
+  header: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingTop: 8, 
+    paddingBottom: 12 
+  },
   closeButton: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  voiceToggle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' }, // ✅ AJOUT
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '800' },
   headerSubtitle: { fontSize: 11, fontWeight: '600', marginTop: 1 },

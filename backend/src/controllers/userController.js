@@ -16,8 +16,8 @@ async function searchUsers(req, res, next) {
       where: {
         id: { [Op.ne]: currentUserId },
         [Op.or]: [
-          { username: { [Op.like]: `%${term}%` } },
-          { email: { [Op.like]: `%${term}%` } },
+          { username: { [Op.iLike]: `%${term}%` } }, // ✅ Op.like -> Op.iLike (compat Postgres)
+          { email: { [Op.iLike]: `%${term}%` } },     // ✅ Op.like -> Op.iLike (compat Postgres)
         ],
       },
       attributes: ['id', 'username', 'email', 'profile_image_url', 'target_language'],

@@ -1,3 +1,4 @@
+// mobile/app/(tabs)/chatbot.tsx
 import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { useChatBot } from '../../hooks/useChatBot';
 import { useSpeechSynthesis } from '../../hooks/useSpeechSynthesis';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { getIsoCode } from '../../constants/languages';
+import { voiceService } from '../../services/voice.service';
 
 export default function ChatBotScreen() {
   const { user } = useAuth();
@@ -15,13 +17,15 @@ export default function ChatBotScreen() {
   const [input, setInput] = useState('');
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [useElevenLabs, setUseElevenLabs] = useState(true);
   const flatListRef = useRef<FlatList>(null);
   const lastSpokenIndex = useRef(-1);
+  const manuallySpokenIds = useRef<Set<string>>(new Set()); // ✅ AJOUT : pour éviter les répétitions
+  
   const language = user?.target_language || 'anglais';
   const { messages, loading, pastSessions, sendMessage, reset, translate, correct, check, practice, loadSession } = useChatBot(language);
 
   const { speak, isSpeaking } = useSpeechSynthesis();
-
   const { record, finishRecording, isRecording, transcription, reset: resetVoice } = useSpeechRecognition(getIsoCode(language), 15000);
 
   React.useEffect(() => {
@@ -31,19 +35,48 @@ export default function ChatBotScreen() {
     }
   }, [transcription, isRecording]);
 
+  // ✅ MODIFIÉ : Lecture automatique avec vérification des doublons
   React.useEffect(() => {
     if (messages.length === 0 || !autoSpeak) return;
     const lastIndex = messages.length - 1;
     const last = messages[lastIndex];
     if (lastIndex === lastSpokenIndex.current) return;
+    
     if (last.role === 'ai') {
       lastSpokenIndex.current = lastIndex;
-      speak(last.text, language);
+      // ✅ Marquer comme déjà lu automatiquement
+      manuallySpokenIds.current.add(last.id);
+      
+      if (useElevenLabs) {
+        voiceService.speak(last.text, {
+          voice: 'alice',
+          speed: 0.85,
+          emotion: 'neutral',
+        }).catch(() => {
+          speak(last.text, language);
+        });
+      } else {
+        speak(last.text, language);
+      }
     } else if (last.role === 'practice') {
       lastSpokenIndex.current = lastIndex;
-      speak(last.text.replace('🎤 ', ''), language);
+      const practiceText = last.text.replace('🎤 ', '');
+      // ✅ Marquer comme déjà lu automatiquement
+      manuallySpokenIds.current.add(last.id);
+      
+      if (useElevenLabs) {
+        voiceService.speak(practiceText, {
+          voice: 'alice',
+          speed: 0.85,
+          emotion: 'neutral',
+        }).catch(() => {
+          speak(practiceText, language);
+        });
+      } else {
+        speak(practiceText, language);
+      }
     }
-  }, [messages, autoSpeak]);
+  }, [messages, autoSpeak, useElevenLabs]);
 
   function handleSend() {
     if (!input.trim() || loading) return;
@@ -52,8 +85,30 @@ export default function ChatBotScreen() {
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 200);
   }
 
-  function handleSpeak(text: string) {
-    speak(text, language);
+  // ✅ MODIFIÉ : Lecture manuelle avec vérification des doublons
+  function handleSpeak(text: string, messageId?: string) {
+    // ✅ Si le message a déjà été lu automatiquement, on ne le relit pas
+    if (messageId && manuallySpokenIds.current.has(messageId)) {
+      console.log('[ChatBot] Message déjà lu automatiquement');
+      return;
+    }
+    
+    // ✅ Marquer comme lu manuellement
+    if (messageId) {
+      manuallySpokenIds.current.add(messageId);
+    }
+    
+    if (useElevenLabs) {
+      voiceService.speak(text, {
+        voice: 'alice',
+        speed: 0.85,
+        emotion: 'neutral',
+      }).catch(() => {
+        speak(text, language);
+      });
+    } else {
+      speak(text, language);
+    }
   }
 
   function handleVoiceInput() {
@@ -79,11 +134,13 @@ export default function ChatBotScreen() {
 
   async function handleReset() {
     lastSpokenIndex.current = -1;
+    manuallySpokenIds.current.clear(); // ✅ Nettoyer les IDs
     await reset();
   }
 
   function handleLoadSession(sessionId: number) {
     lastSpokenIndex.current = -1;
+    manuallySpokenIds.current.clear(); // ✅ Nettoyer les IDs
     loadSession(sessionId);
     setShowHistory(false);
   }
@@ -93,6 +150,13 @@ export default function ChatBotScreen() {
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]}>Conversation</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <TouchableOpacity onPress={() => setUseElevenLabs(v => !v)}>
+            <FontAwesome 
+              name={useElevenLabs ? 'magic' : 'volume-up'} 
+              size={18} 
+              color={useElevenLabs ? theme.primary : theme.textSecondary} 
+            />
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowHistory(v => !v)}>
             <FontAwesome name="history" size={18} color={showHistory ? theme.primary : theme.textSecondary} />
           </TouchableOpacity>
@@ -197,11 +261,13 @@ export default function ChatBotScreen() {
                   <View style={[styles.bubble, styles.aiBubble, { backgroundColor: theme.surface }]}>
                     <Text style={[styles.bubbleText, { color: theme.text }]}>{item.text}</Text>
                   </View>
-                  {/* ✅ Traduction automatique — s'affiche dès qu'elle arrive, sans avoir a cliquer sur "Traduire" */}
                   {item.translation && (
                     <Text style={[styles.autoTranslation, { color: theme.textSecondary }]}>🇫🇷 {item.translation}</Text>
                   )}
-                  <TouchableOpacity onPress={() => handleSpeak(item.text)} style={styles.listenBtn}>
+                  <TouchableOpacity 
+                    onPress={() => handleSpeak(item.text, item.id)} // ✅ Passer l'ID
+                    style={styles.listenBtn}
+                  >
                     <FontAwesome name="volume-up" size={14} color={theme.primary} />
                     <Text style={[styles.listenText, { color: theme.primary }]}>Ecouter</Text>
                   </TouchableOpacity>
@@ -268,7 +334,6 @@ const styles = StyleSheet.create({
   userBubble: { alignSelf: 'flex-end', borderBottomRightRadius: 4 },
   aiBubble: { alignSelf: 'flex-start', borderBottomLeftRadius: 4 },
   bubbleText: { fontSize: 15, lineHeight: 20 },
-  // ✅ Ajout — style de la traduction automatique affichée sous la bulle IA
   autoTranslation: { fontSize: 12, fontStyle: 'italic', marginLeft: 16, marginTop: 2, marginBottom: 2 },
   listenBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 16, marginBottom: 4 },
   listenText: { fontSize: 12, fontWeight: '600' },

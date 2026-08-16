@@ -1,46 +1,27 @@
-import { Audio } from 'expo-av';
-
-let successSound: Audio.Sound | null = null;
-let failSound: Audio.Sound | null = null;
-
-const SUCCESS_URL = 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3';
-const FAIL_URL = 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d37f6c9f9.mp3';
+// mobile/services/sounds.ts
+import * as Haptics from 'expo-haptics';
 
 export async function playSuccessSound() {
   try {
-    if (successSound) {
-      await successSound.setPositionAsync(0);
-      await successSound.playAsync();
-    } else {
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: SUCCESS_URL },
-        { shouldPlay: true, volume: 0.5 }
-      );
-      successSound = sound;
-    }
-  } catch (err) {
-    console.log('Son succes non disponible');
+    // ✅ Vibration courte et légère pour le succès
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  } catch (error) {
+    // Fallback silencieux si l'haptique n'est pas disponible
+    console.log('Retour haptique non disponible');
   }
 }
 
 export async function playFailSound() {
   try {
-    if (failSound) {
-      await failSound.setPositionAsync(0);
-      await failSound.playAsync();
-    } else {
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: FAIL_URL },
-        { shouldPlay: true, volume: 0.3 }
-      );
-      failSound = sound;
-    }
-  } catch (err) {
-    console.log('Son echec non disponible');
+    // ✅ Vibration plus marquée pour l'échec
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+  } catch (error) {
+    console.log('Retour haptique non disponible');
   }
 }
 
+// ✅ Fonction de déchargement (plus nécessaire, mais gardée pour compatibilité)
 export async function unloadSounds() {
-  if (successSound) { await successSound.unloadAsync(); successSound = null; }
-  if (failSound) { await failSound.unloadAsync(); failSound = null; }
+  // Ne fait rien, car il n'y a plus de sons à décharger
+  return Promise.resolve();
 }

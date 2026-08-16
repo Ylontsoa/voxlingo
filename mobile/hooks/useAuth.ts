@@ -1,15 +1,16 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User } from '../types/user';
-import { loginRequest, registerRequest, getMeRequest } from '../services/api/auth';
+import { loginRequest, registerRequest, getMeRequest, selectLanguageRequest } from '../services/api/auth';
 import { saveToken, getToken, deleteToken } from '../services/storage/secureStorage';
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, confirmPassword: string, username?: string) => Promise<void>; // ✅ username optionnel
+  register: (email: string, password: string, confirmPassword: string, username?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  changeLanguage: (language: string) => Promise<void>; // ✅ AJOUTÉ
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -46,8 +47,8 @@ export function useAuthProvider(): AuthContextValue {
     setUser(res.user);
   }
 
-  async function register(email: string, password: string, confirmPassword: string, username?: string) { // ✅
-    const res = await registerRequest(email, password, confirmPassword, username); // ✅
+  async function register(email: string, password: string, confirmPassword: string, username?: string) {
+    const res = await registerRequest(email, password, confirmPassword, username);
     await saveToken(res.token);
     setUser(res.user);
   }
@@ -66,7 +67,27 @@ export function useAuthProvider(): AuthContextValue {
     }
   }
 
-  return { user, loading, login, register, logout, refreshUser };
+  // ✅ AJOUTÉ - Fonction pour changer la langue d'apprentissage
+  async function changeLanguage(language: string) {
+    try {
+      await selectLanguageRequest(language);
+      await refreshUser();
+      console.log('✅ Langue changée avec succès:', language);
+    } catch (err) {
+      console.error('❌ Erreur changement de langue:', err);
+      throw err;
+    }
+  }
+
+  return { 
+    user, 
+    loading, 
+    login, 
+    register, 
+    logout, 
+    refreshUser,
+    changeLanguage, // ✅ EXPORTÉ
+  };
 }
 
 export function useAuth() {
