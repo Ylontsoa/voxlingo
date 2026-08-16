@@ -1,11 +1,17 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,              // ✅ SSL direct, plus fiable que STARTTLS sur 587
+  family: 4,                 // ✅ force IPv4, contourne l'IPv6 qui causait ENETUNREACH
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 15000,  // ✅ laisse plus de temps au réseau Render
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
 });
 
 async function sendVerificationEmail(email, code) {

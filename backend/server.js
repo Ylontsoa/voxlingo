@@ -1,3 +1,7 @@
+// TOUT EN HAUT, avant tous les autres require() : force IPv4
+// pour éviter l'erreur ENETUNREACH sur les adresses IPv6 (Render)
+require('dns').setDefaultResultOrder('ipv4first');
+
 require('dotenv').config();
 const http = require('http');
 const { Server } = require('socket.io');
